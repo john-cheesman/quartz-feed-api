@@ -59,8 +59,8 @@ $app->get('/getAvailableFeeds', function (Request $request, Response $response) 
 $app->get('/getAggregatedFeedItems', function(Request $request, Response $response) {
     try {
         $urls = explode(',', $request->getQueryParam('urls'));
-        $offset = (int)$request->getQueryParam('offset') || 0;
-        $limit = (int)$request->getQueryParam('limit');
+        $offset = (int)$request->getQueryParam('offset');
+        $limit = $request->getQueryParam('limit') ? (int)$request->getQueryParam('limit') : null;
         $items = [];
         $reader = new Reader;
 
@@ -84,7 +84,6 @@ $app->get('/getAggregatedFeedItems', function(Request $request, Response $respon
 
         if ($limit || $offset) {
             $items = array_slice($items, $offset, $limit);
-            echo(count($items));
         }
 
         echo json_encode($items);
