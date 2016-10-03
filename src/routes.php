@@ -56,3 +56,42 @@ $app->get('/getAvailableFeeds', function (Request $request, Response $response) 
     }
 });
 
+$app->get('/getAggregatedFeedItems', function(Request $request, Response $response) {
+    try {
+        $urls = explode(',', $request->getQueryParam('urls'));
+        $offset = (int)$request->getQueryParam('offset') || 0;
+        $limit = (int)$request->getQueryParam('limit');
+        $items = [];
+        $reader = new Reader;
+
+        foreach ($urls as $url) {
+            $resource = $reader->download($url);
+
+            if ($resource) {
+                $parser = $reader->getParser(
+                    $resource->getUrl(),
+                    $resource->getContent(),
+                    $resource->getEncoding()
+                );
+
+                $feed = $parser->execute();
+
+                foreach($feed->getItems() as $item) {
+                    array_push($items, $item);
+                }
+            }
+        }
+
+        if ($limit || $offset) {
+            $items = array_slice($items, $offset, $limit);
+            echo(count($items));
+        }
+
+        echo json_encode($items);
+    }
+    catch (PicoFeedException $e) {
+        $response->withStatus(404);
+        $this->logger->info('Error: ' . $e->getMessage() . ' Code: ' . $e->getCode());
+        echo '{"error":{"text":' . $e->getMessage() . ', "code":' . $e->getCode() . '}}';
+    }
+});
