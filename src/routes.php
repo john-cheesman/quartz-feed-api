@@ -22,6 +22,7 @@ $app->get('/getFeed', function (Request $request, Response $response) {
             $feed = $parser->execute();
             $response->withStatus(200);
             $response->withHeader('Content-Type', 'application/json');
+            unset($feed->items);
             echo json_encode($feed);
         } else {
             throw new PDOException('No feed data', 101);
@@ -62,6 +63,8 @@ $app->get('/getAggregatedFeedItems', function(Request $request, Response $respon
         $offset = (int)$request->getQueryParam('offset');
         $limit = $request->getQueryParam('limit') ? (int)$request->getQueryParam('limit') : null;
         $items = [];
+        $itemDates = [];
+        $sortedItems = [];
         $reader = new Reader;
 
         foreach ($urls as $url) {
@@ -77,16 +80,23 @@ $app->get('/getAggregatedFeedItems', function(Request $request, Response $respon
                 $feed = $parser->execute();
 
                 foreach($feed->getItems() as $item) {
-                    array_push($items, $item);
+                    $items[$item->id] = $item;
+                    $itemDates[$item->id] = $item->publishedDate;
                 }
             }
         }
 
-        if ($limit || $offset) {
-            $items = array_slice($items, $offset, $limit);
+        arsort($itemDates);
+
+        foreach($itemDates as $key => $item) {
+            array_push($sortedItems, $items[$key]);
         }
 
-        echo json_encode($items);
+        if ($limit || $offset) {
+            $sortedItems = array_slice($sortedItems, $offset, $limit);
+        }
+
+        echo json_encode($sortedItems);
     }
     catch (PicoFeedException $e) {
         $response->withStatus(404);
