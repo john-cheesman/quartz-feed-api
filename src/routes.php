@@ -46,7 +46,7 @@ $app->get('/getAvailableFeeds', function (Request $request, Response $response) 
                 $resource->getContent()
             );
 
-            echo json_encode($feeds);
+            echo json_encode('{results:' . $feeds . '}');
         } else {
             throw new PDOException('No available feeds', 102);
         }
