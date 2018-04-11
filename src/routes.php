@@ -98,7 +98,7 @@ $app->get('/getAggregatedFeedItems', function(Request $request, Response $respon
             $sortedItems = array_slice($sortedItems, $offset, $limit);
         }
 
-        $result = (object) ['results' => $sortedItems]
+        $result = (object) ['results' => $sortedItems];
 
         echo json_encode($result);
     }
