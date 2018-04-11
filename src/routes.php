@@ -46,7 +46,9 @@ $app->get('/getAvailableFeeds', function (Request $request, Response $response) 
                 $resource->getContent()
             );
 
-            echo json_encode('{results:' . $feeds . '}');
+            $result = (object) ['results' => $feeds];
+
+            echo json_encode($result);
         } else {
             throw new PDOException('No available feeds', 102);
         }
@@ -96,7 +98,9 @@ $app->get('/getAggregatedFeedItems', function(Request $request, Response $respon
             $sortedItems = array_slice($sortedItems, $offset, $limit);
         }
 
-        echo json_encode($sortedItems);
+        $result = (object) ['results' => $sortedItems]
+
+        echo json_encode($result);
     }
     catch (PicoFeedException $e) {
         $response->withStatus(404);
